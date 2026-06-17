@@ -1340,7 +1340,7 @@ export default function Home() {
                         </div>
                       )}
 
-                      // --- MEDIA CARDS GRID ---
+                      {/* --- MEDIA CARDS GRID --- */}
                       <div className="media-grid">
                       {filteredFiles.map((file) => (
                         <div 
