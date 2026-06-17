@@ -22,7 +22,7 @@ export const metadata = {
     description: "Get direct image public URLs and free video hosting using G Drive as a public CDN.",
     images: [
       {
-        url: "/opengraph-image.png",
+        url: "/opengraph-image.jpg",
         width: 1200,
         height: 630,
         alt: "GDrive Media Host Thumbnail",
@@ -34,7 +34,7 @@ export const metadata = {
     card: "summary_large_image",
     title: "G Drive Media Hosting - Free Media Hosting",
     description: "Get direct image public URLs and free video hosting using G Drive as a public CDN.",
-    images: ["/opengraph-image.png"],
+    images: ["/opengraph-image.jpg"],
   }
 };
 

@@ -17,7 +17,7 @@ export const metadata = {
     description: "Learn how we handle your Google user data securely with our 100% database-free, client-side architecture.",
     images: [
       {
-        url: "/opengraph-image.png",
+        url: "/opengraph-image.jpg",
         width: 1200,
         height: 630,
         alt: "GDrive Media Host Privacy Policy",
@@ -29,7 +29,7 @@ export const metadata = {
     card: "summary_large_image",
     title: "Privacy Policy - G Drive Media Hosting",
     description: "Learn how we handle your Google user data securely with our 100% database-free, client-side architecture.",
-    images: ["/opengraph-image.png"],
+    images: ["/opengraph-image.jpg"],
   }
 };
 
