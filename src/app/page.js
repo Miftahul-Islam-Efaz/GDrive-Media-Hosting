@@ -872,7 +872,12 @@ export default function Home() {
                 placeholder="Search hosted files..."
                 className="search-input"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  if (currentTab === "settings") {
+                    setCurrentTab("all");
+                  }
+                }}
               />
             </div>
           </div>
