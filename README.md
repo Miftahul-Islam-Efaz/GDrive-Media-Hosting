@@ -1,4 +1,4 @@
-<p align="center">
+<img src="https://lh3.googleusercontent.com/d/1DdZPoHWWqGJNypGCXBk1JVRF-AIC_1Mx" /><p align="center">
   <img src="https://img.shields.io/github/stars/Miftahul-Islam-Efaz/GDrive-Media-Hosting?style=for-the-badge&logo=github&color=4899ff" alt="GitHub Stars" />
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License" />
   <img src="https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js" alt="Next.js" />
