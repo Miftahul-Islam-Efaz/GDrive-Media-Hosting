@@ -770,7 +770,7 @@ export default function Home() {
     <div className="app-container">
       
       {/* Sidebar Navigation */}
-      <aside className={`sidebar ${sidebarOpen ? "" : "collapsed"}`} style={{ display: sidebarOpen ? "flex" : "none" }}>
+      <aside className={`sidebar ${sidebarOpen ? "open" : "collapsed"}`}>
         <div className="brand-section">
           <Folder className="icon" style={{ color: "#4899ff", width: 28, height: 28 }} />
           <h1 className="brand-title">GDrive Host</h1>
