@@ -74,21 +74,36 @@ export default function AboutPage() {
         padding: "48px 40px"
       }}>
         
-        {/* Navigation back to dashboard */}
-        <Link href="/" style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 8,
-          color: "#4899ff",
-          textDecoration: "none",
-          fontWeight: 600,
-          fontSize: "0.95rem",
-          marginBottom: 32,
-          transition: "transform 0.2s ease"
-        }}>
-          <ArrowLeft style={{ width: 18, height: 18 }} />
-          Back to Dashboard
-        </Link>
+        {/* Navigation back to dashboard & About Developer link */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32, flexWrap: "wrap", gap: 12 }}>
+          <Link href="/" style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            color: "#4899ff",
+            textDecoration: "none",
+            fontWeight: 600,
+            fontSize: "0.95rem",
+            transition: "transform 0.2s ease"
+          }}>
+            <ArrowLeft style={{ width: 18, height: 18 }} />
+            Back to Dashboard
+          </Link>
+
+          <Link href="/about/developer" style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            color: "#34a853",
+            textDecoration: "none",
+            fontWeight: 600,
+            fontSize: "0.95rem",
+            transition: "transform 0.2s ease"
+          }}>
+            About Developer
+            <ExternalLink style={{ width: 16, height: 16 }} />
+          </Link>
+        </div>
 
         {/* Branding header */}
         <header style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 24 }}>

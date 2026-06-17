@@ -13,6 +13,12 @@ export default function sitemap() {
       priority: 0.8,
     },
     {
+      url: "https://g-drive-media-hosting.vercel.app/about/developer",
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.9,
+    },
+    {
       url: "https://g-drive-media-hosting.vercel.app/privacy",
       lastModified: new Date(),
       changeFrequency: "monthly",

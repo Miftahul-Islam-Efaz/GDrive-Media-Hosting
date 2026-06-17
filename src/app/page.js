@@ -25,6 +25,7 @@ export default function Home() {
   const [activeFolderId, setActiveFolderId] = useState("");
   const [loadingFiles, setLoadingFiles] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [folderSuffix, setFolderSuffix] = useState("Media Host");
 
   // --- STATE FOR MAIN DASHBOARD INTERFACE ---
   const [currentTab, setCurrentTab] = useState("all"); // all, images, videos, settings
@@ -58,12 +59,14 @@ export default function Home() {
   useEffect(() => {
     const savedClientId = localStorage.getItem("gdrive_custom_client_id") || "";
     const savedFolderId = localStorage.getItem("gdrive_active_folder_id") || "";
+    const savedFolderSuffix = localStorage.getItem("gdrive_folder_suffix") || "Media Host";
     
     if (savedClientId) {
       setClientId(savedClientId);
       setIsCustomClient(true);
     }
     setActiveFolderId(savedFolderId);
+    setFolderSuffix(savedFolderSuffix);
 
     const cachedToken = sessionStorage.getItem("gdrive_access_token") || "";
     const cachedExpiry = parseInt(sessionStorage.getItem("gdrive_token_expiry") || "0", 10);
@@ -409,11 +412,26 @@ export default function Home() {
   };
 
   // --- DRIVE FOLDER RESOLVER & LISTER ---
-  const initializeDriveFolder = async (token) => {
+  const initializeDriveFolder = async (token, customSuffix = null) => {
     setLoadingFiles(true);
+    setErrorMsg("");
     try {
-      // 1. Search for existing GDrive Media Host folder
-      const query = encodeURIComponent("name='GDrive Media Host' and mimeType='application/vnd.google-apps.folder' and trashed=false");
+      const suffixToUse = customSuffix !== null ? customSuffix : folderSuffix;
+      const cleanSuffix = suffixToUse.trim();
+      let folderName = "GDrive Media Host";
+      if (cleanSuffix) {
+        if (cleanSuffix.toLowerCase().startsWith("gdrive")) {
+          folderName = cleanSuffix;
+        } else {
+          folderName = `GDrive ${cleanSuffix}`;
+        }
+      }
+
+      // Save folder suffix to localStorage
+      localStorage.setItem("gdrive_folder_suffix", cleanSuffix || "Media Host");
+
+      // 1. Search for existing folder
+      const query = encodeURIComponent(`name='${folderName.replace(/'/g, "\\'")}' and mimeType='application/vnd.google-apps.folder' and trashed=false`);
       const searchUrl = `https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id,name)`;
       
       const searchRes = await fetch(searchUrl, {
@@ -431,7 +449,7 @@ export default function Home() {
       if (searchData.files && searchData.files.length > 0) {
         // Use existing folder
         folderId = searchData.files[0].id;
-        showToast("Found existing 'GDrive Media Host' folder.");
+        showToast(`Found existing '${folderName}' folder.`);
       } else {
         // 2. Create the folder if it doesn't exist
         const createRes = await fetch("https://www.googleapis.com/drive/v3/files", {
@@ -441,7 +459,7 @@ export default function Home() {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            name: "GDrive Media Host",
+            name: folderName,
             mimeType: "application/vnd.google-apps.folder"
           })
         });
@@ -453,7 +471,7 @@ export default function Home() {
 
         const newFolder = await createRes.json();
         folderId = newFolder.id;
-        showToast("Created new 'GDrive Media Host' folder!");
+        showToast(`Created new '${folderName}' folder!`);
       }
 
       // Ensure the folder is public so that nested uploads inherit public accessibility
@@ -468,6 +486,11 @@ export default function Home() {
     } finally {
       setLoadingFiles(false);
     }
+  };
+
+  const handleCreateNewFolder = async (token) => {
+    if (!token) return;
+    await initializeDriveFolder(token, folderSuffix);
   };
 
   const fetchFiles = async (folderId, token) => {
@@ -743,6 +766,12 @@ export default function Home() {
     return result;
   }, [files, currentTab, searchQuery, sortBy]);
 
+  const currentFolderName = useMemo(() => {
+    const cleanSuffix = folderSuffix.trim();
+    if (!cleanSuffix) return "GDrive Media Host";
+    return cleanSuffix.toLowerCase().startsWith("gdrive") ? cleanSuffix : `GDrive ${cleanSuffix}`;
+  }, [folderSuffix]);
+
   // Format File Size
   const formatBytes = (bytes, decimals = 2) => {
     if (!bytes || bytes === "0" || parseFloat(bytes) === 0) return "0 Bytes";
@@ -962,6 +991,43 @@ export default function Home() {
                   </>
                 )}
               </div>
+
+              {/* Folder Configuration Settings Card */}
+              <div className="card" style={{ padding: 24, display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 16, marginTop: 24 }}>
+                <h3 style={{ fontSize: "1.15rem", fontWeight: "500", margin: 0 }}>Target Folder Configuration</h3>
+                <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)", margin: 0, lineHeight: 1.4 }}>
+                  Specify a custom suffix for your folder (e.g. <code>My Blog</code>). The folder will be searched or created under your Google Account with the prefix <strong>"GDrive "</strong>.
+                </p>
+                <div style={{ display: "flex", gap: 12, width: "100%", alignItems: "center", flexWrap: "wrap" }}>
+                  <input
+                    type="text"
+                    placeholder="Media Host"
+                    value={folderSuffix}
+                    onChange={(e) => setFolderSuffix(e.target.value)}
+                    style={{
+                      padding: "10px 16px",
+                      borderRadius: "20px",
+                      border: "1px solid var(--border-color)",
+                      fontSize: "0.9rem",
+                      flexGrow: 1,
+                      minWidth: "200px"
+                    }}
+                  />
+                  {accessToken && (
+                    <button 
+                      onClick={() => handleCreateNewFolder(accessToken)}
+                      disabled={loadingFiles}
+                      className="btn btn-primary"
+                      style={{ padding: "10px 24px", borderRadius: "24px", fontSize: "0.85rem" }}
+                    >
+                      {loadingFiles ? "Applying..." : "Apply & Create"}
+                    </button>
+                  )}
+                </div>
+                <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)", fontStyle: "italic" }}>
+                  Active Target Folder: <strong>{currentFolderName}</strong> {activeFolderId ? `(ID: ${activeFolderId})` : ""}
+                </span>
+              </div>
             </div>
           ) : (
             // --- ALL / IMAGES / VIDEOS FILE MANAGER ---
@@ -970,7 +1036,7 @@ export default function Home() {
               <div className="path-bar">
                 <div className="path-title">
                   <Folder className="icon" style={{ color: "#4899ff", width: 24, height: 24 }} />
-                  <span>GDrive Media Host</span>
+                  <span>{currentFolderName}</span>
                   {activeFolderId && (
                     <span style={{ fontSize: "0.8rem", color: "var(--text-secondary)", backgroundColor: "var(--bg-secondary)", padding: "2px 8px", borderRadius: 12, fontWeight: 400 }}>
                       Folder ID: {activeFolderId}
@@ -997,9 +1063,33 @@ export default function Home() {
                   <ShieldAlert className="icon" style={{ width: 64, height: 64, color: "#4899ff" }} />
                   <div>
                     <h3 style={{ fontSize: "1.25rem", fontWeight: "500", marginBottom: 8 }}>Connect to G Drive</h3>
-                    <p style={{ color: "var(--text-secondary)", maxWidth: 450, fontSize: "0.9rem" }}>
-                      Log in to your Google Account to authorize this app. We will create a secure, isolated folder <strong>"GDrive Media Host"</strong> in your account to host public images and videos.
+                    <p style={{ color: "var(--text-secondary)", maxWidth: 450, fontSize: "0.9rem", marginBottom: 20 }}>
+                      Log in to your Google Account to authorize this app. We will create a secure, isolated folder <strong>"{currentFolderName}"</strong> in your account to host public images and videos.
                     </p>
+                    
+                    {/* Custom Folder Name Input Suffix */}
+                    <div style={{ display: "flex", flexDirection: "column", width: "100%", maxWidth: "340px", gap: 8, margin: "0 auto 8px auto", textAlign: "left" }}>
+                      <label style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text-secondary)" }}>
+                        Custom Folder Name (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Media Host"
+                        value={folderSuffix}
+                        onChange={(e) => setFolderSuffix(e.target.value)}
+                        style={{
+                          padding: "10px 16px",
+                          borderRadius: "20px",
+                          border: "1px solid var(--border-color)",
+                          backgroundColor: "#f8fafd",
+                          fontSize: "0.88rem",
+                          width: "100%"
+                        }}
+                      />
+                      <span style={{ fontSize: "0.72rem", color: "var(--text-secondary)", fontStyle: "italic" }}>
+                        Folder in Google Drive: <strong>{currentFolderName}</strong>
+                      </span>
+                    </div>
                   </div>
                   <button onClick={handleConnect} disabled={authLoading} className="btn btn-primary" style={{ gap: 10, padding: "12px 28px" }}>
                     {authLoading ? (
