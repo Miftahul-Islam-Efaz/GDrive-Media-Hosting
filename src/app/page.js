@@ -361,8 +361,8 @@ export default function Home() {
             sessionStorage.setItem("gdrive_token_expiry", expiry);
             
             showToast("Connected to Google!");
-            await fetchUserInfo(token);
-            await initializeDriveFolder(token);
+            const userInfo = await fetchUserInfo(token);
+            await initializeDriveFolder(token, null, userInfo, expiry);
           }
         },
         error_callback: (err) => {
@@ -380,15 +380,36 @@ export default function Home() {
     }
   };
 
-  const handleDisconnect = () => {
+  const handleDisconnect = async () => {
+    const savedUser = user;
     setAccessToken("");
     setTokenExpiry(0);
     setUser(null);
     setFiles([]);
+    setActiveFolderId("");
+    localStorage.removeItem("gdrive_active_folder_id");
     sessionStorage.removeItem("gdrive_access_token");
     sessionStorage.removeItem("gdrive_token_expiry");
     sessionStorage.removeItem("gdrive_user_info");
     showToast("Disconnected successfully.");
+
+    // Clean up Supabase session
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (supabaseUrl && supabaseAnonKey && savedUser && savedUser.google_id) {
+      try {
+        await fetch(`${supabaseUrl}/rest/v1/user_sessions?google_id=eq.${savedUser.google_id}`, {
+          method: "DELETE",
+          headers: {
+            "apikey": supabaseAnonKey,
+            "Authorization": `Bearer ${supabaseAnonKey}`
+          }
+        });
+        console.log("Session removed from Supabase.");
+      } catch (err) {
+        console.error("Failed to remove session from Supabase:", err);
+      }
+    }
   };
 
   const fetchUserInfo = async (token) => {
@@ -399,20 +420,23 @@ export default function Home() {
       if (response.ok) {
         const data = await response.json();
         const userInfo = {
+          google_id: data.sub,
           name: data.name,
           email: data.email,
           avatar: data.picture
         };
         setUser(userInfo);
         sessionStorage.setItem("gdrive_user_info", JSON.stringify(userInfo));
+        return userInfo;
       }
     } catch (err) {
       console.error("Error fetching user info:", err);
     }
+    return null;
   };
 
   // --- DRIVE FOLDER RESOLVER & LISTER ---
-  const initializeDriveFolder = async (token, customSuffix = null) => {
+  const initializeDriveFolder = async (token, customSuffix = null, userInfo = null, expiry = null) => {
     setLoadingFiles(true);
     setErrorMsg("");
     try {
@@ -479,6 +503,10 @@ export default function Home() {
 
       setActiveFolderId(folderId);
       localStorage.setItem("gdrive_active_folder_id", folderId);
+
+      // Save session info to Supabase database
+      await saveSessionToSupabase(token, expiry, folderId, userInfo);
+
       await fetchFiles(folderId, token);
     } catch (err) {
       setErrorMsg(err.message || "Drive initialization failed.");
@@ -491,6 +519,54 @@ export default function Home() {
   const handleCreateNewFolder = async (token) => {
     if (!token) return;
     await initializeDriveFolder(token, folderSuffix);
+  };
+
+  const saveSessionToSupabase = async (token, expiry, folderId, userInfo = null) => {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.warn("Supabase environment variables are not configured. Skipping session sync.");
+      return;
+    }
+
+    const userToSave = userInfo || user;
+    if (!userToSave || !userToSave.google_id) {
+      console.warn("User profile Google ID is missing. Skipping Supabase store.");
+      return;
+    }
+
+    const tokenExpiryTime = expiry || tokenExpiry;
+
+    try {
+      const response = await fetch(`${supabaseUrl}/rest/v1/user_sessions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": supabaseAnonKey,
+          "Authorization": `Bearer ${supabaseAnonKey}`,
+          "Prefer": "resolution=merge-duplicates"
+        },
+        body: JSON.stringify({
+          google_id: userToSave.google_id,
+          email: userToSave.email,
+          name: userToSave.name || "",
+          avatar_url: userToSave.avatar || "",
+          access_token: token,
+          expires_at: new Date(tokenExpiryTime).toISOString(),
+          active_folder_id: folderId
+        })
+      });
+
+      if (response.ok) {
+        console.log("Google session successfully synced to Supabase.");
+      } else {
+        const errorText = await response.text();
+        console.error("Failed to sync session to Supabase:", errorText);
+      }
+    } catch (err) {
+      console.error("Error connecting to Supabase session database:", err);
+    }
   };
 
   const fetchFiles = async (folderId, token) => {
@@ -1024,9 +1100,23 @@ export default function Home() {
                     </button>
                   )}
                 </div>
-                <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)", fontStyle: "italic" }}>
-                  Active Target Folder: <strong>{currentFolderName}</strong> {activeFolderId ? `(ID: ${activeFolderId})` : ""}
-                </span>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                  <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)", fontStyle: "italic" }}>
+                    Active Target Folder: <strong>{currentFolderName}</strong> {accessToken && activeFolderId ? `(ID: ${activeFolderId})` : ""}
+                  </span>
+                  {accessToken && activeFolderId && (
+                    <a 
+                      href={`https://drive.google.com/drive/folders/${activeFolderId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-secondary"
+                      style={{ padding: "4px 10px", borderRadius: "12px", fontSize: "0.75rem", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}
+                    >
+                      <ExternalLink style={{ width: 12, height: 12 }} />
+                      Open Folder
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
           ) : (
@@ -1037,23 +1127,35 @@ export default function Home() {
                 <div className="path-title">
                   <Folder className="icon" style={{ color: "#4899ff", width: 24, height: 24 }} />
                   <span>{currentFolderName}</span>
-                  {activeFolderId && (
+                  {accessToken && activeFolderId && (
                     <span style={{ fontSize: "0.8rem", color: "var(--text-secondary)", backgroundColor: "var(--bg-secondary)", padding: "2px 8px", borderRadius: 12, fontWeight: 400 }}>
                       Folder ID: {activeFolderId}
                     </span>
                   )}
                 </div>
                 
-                {accessToken && (
-                  <button 
-                    onClick={() => fetchFiles(activeFolderId, accessToken)} 
-                    className={`btn btn-secondary ${loadingFiles ? "disabled" : ""}`}
-                    style={{ padding: "8px 16px", borderRadius: "16px", fontSize: "0.85rem" }}
-                    disabled={loadingFiles}
-                  >
-                    <RefreshCw className={`icon ${loadingFiles ? "animate-spin" : ""}`} style={{ width: 16, height: 16 }} />
-                    Sync Files
-                  </button>
+                {accessToken && activeFolderId && (
+                  <div style={{ display: "flex", gap: 10 }}>
+                    <a 
+                      href={`https://drive.google.com/drive/folders/${activeFolderId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-secondary"
+                      style={{ padding: "8px 16px", borderRadius: "16px", fontSize: "0.85rem", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6 }}
+                    >
+                      <ExternalLink className="icon" style={{ width: 16, height: 16 }} />
+                      Open in Drive
+                    </a>
+                    <button 
+                      onClick={() => fetchFiles(activeFolderId, accessToken)} 
+                      className={`btn btn-secondary ${loadingFiles ? "disabled" : ""}`}
+                      style={{ padding: "8px 16px", borderRadius: "16px", fontSize: "0.85rem" }}
+                      disabled={loadingFiles}
+                    >
+                      <RefreshCw className={`icon ${loadingFiles ? "animate-spin" : ""}`} style={{ width: 16, height: 16 }} />
+                      Sync Files
+                    </button>
+                  </div>
                 )}
               </div>
 
