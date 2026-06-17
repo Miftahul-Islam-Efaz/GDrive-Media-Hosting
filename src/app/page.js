@@ -500,7 +500,7 @@ export default function Home() {
   // --- MULTIPART FILE UPLOAD WITH PROGRESS TRACKING ---
   const uploadFile = (file) => {
     if (!accessToken || !activeFolderId) {
-      showToast("Please connect to Google Drive first.", "error");
+      showToast("Please connect to G Drive first.", "error");
       return;
     }
 
@@ -768,6 +768,23 @@ export default function Home() {
   // --- MAIN RENDER ---
   return (
     <div className="app-container">
+      {/* Hidden SEO Keywords Block for Search Engines (Invisible to human users) */}
+      <div style={{
+        position: "absolute",
+        width: "1px",
+        height: "1px",
+        padding: "0",
+        margin: "-1px",
+        overflow: "hidden",
+        clip: "rect(0, 0, 0, 0)",
+        whiteSpace: "nowrap",
+        border: "0"
+      }}>
+        <h2>Google Drive Image Upload, Google Drive Hosting, and Free GDrive CDN</h2>
+        <p>
+          Easily generate public direct image URLs from Google Drive. Host images, videos, and media files for free using your personal Google Drive as a public CDN storage server. Convert Google Drive share links into hotlinks and direct embedding URLs.
+        </p>
+      </div>
       
       {/* Sidebar Navigation */}
       <aside className={`sidebar ${sidebarOpen ? "open" : "collapsed"}`}>
@@ -908,7 +925,7 @@ export default function Home() {
                 {accessToken ? (
                   <>
                     <p style={{ fontSize: "0.9rem", color: "var(--text-primary)" }}>
-                      You are currently connected to Google Drive. To disconnect your account and clear the session tokens from this browser, click the button below.
+                      You are currently connected to G Drive. To disconnect your account and clear the session tokens from this browser, click the button below.
                     </p>
                     <button 
                       onClick={handleDisconnect} 
@@ -922,7 +939,7 @@ export default function Home() {
                 ) : (
                   <>
                     <p style={{ fontSize: "0.9rem", color: "var(--text-secondary)" }}>
-                      No Google Drive account is currently connected.
+                      No G Drive account is currently connected.
                     </p>
                     <button 
                       onClick={handleConnect} 
@@ -969,7 +986,7 @@ export default function Home() {
                 <div className="card" style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "64px 32px", textAlign: "center", gap: 20 }}>
                   <ShieldAlert className="icon" style={{ width: 64, height: 64, color: "#4899ff" }} />
                   <div>
-                    <h3 style={{ fontSize: "1.25rem", fontWeight: "500", marginBottom: 8 }}>Connect to Google Drive</h3>
+                    <h3 style={{ fontSize: "1.25rem", fontWeight: "500", marginBottom: 8 }}>Connect to G Drive</h3>
                     <p style={{ color: "var(--text-secondary)", maxWidth: 450, fontSize: "0.9rem" }}>
                       Log in to your Google Account to authorize this app. We will create a secure, isolated folder <strong>"GDrive Media Host"</strong> in your account to host public images and videos.
                     </p>
@@ -983,7 +1000,7 @@ export default function Home() {
                     ) : (
                       <>
                         <RefreshCw className="icon" style={{ color: "white" }} />
-                        Connect to Google Drive
+                        Connect to G Drive
                       </>
                     )}
                   </button>
@@ -1055,14 +1072,14 @@ export default function Home() {
                   {/* Empty States / Loading / File Grid */}
                   {loadingFiles && files.length === 0 ? (
                     <div className="empty-state">
-                      <Loader2 className="empty-icon animate-spin" style={{ color: "#4899ff" }} />
-                      <div className="empty-title">Loading files...</div>
-                      <div className="empty-desc">Querying your Google Drive media repository</div>
+                       <Loader2 className="empty-icon animate-spin" style={{ color: "#4899ff" }} />
+                       <div className="empty-title">Loading files...</div>
+                       <div className="empty-desc">Querying your G Drive media repository</div>
                     </div>
                   ) : errorMsg ? (
                     <div className="empty-state" style={{ color: "#ef4444" }}>
                       <AlertCircle className="empty-icon" style={{ color: "#ef4444" }} />
-                      <div className="empty-title">Drive Sync Error</div>
+                      <div className="empty-title">G Drive Sync Error</div>
                       <div className="empty-desc">{errorMsg}</div>
                     </div>
                   ) : filteredFiles.length === 0 ? (
