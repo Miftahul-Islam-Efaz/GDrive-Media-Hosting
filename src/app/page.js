@@ -6,7 +6,7 @@ import {
   LogOut, UploadCloud, X, Copy, Trash2, Eye, Check, ExternalLink, 
   FileText, ChevronRight, Plus, Grid, ArrowUpDown, CheckCircle2, 
   Loader2, HelpCircle, RefreshCw, AlertCircle, FileAudio, File, 
-  ShieldAlert, Info, Menu, Github, Edit2
+  ShieldAlert, Info, Menu, Github, Edit2, Lock
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -853,6 +853,16 @@ export default function Home() {
               >
                 <Info className="icon" />
                 About Host
+              </a>
+            </li>
+            <li>
+              <a 
+                href="/privacy" 
+                className="nav-item"
+                style={{ width: "100%", textDecoration: "none", display: "flex", alignItems: "center" }}
+              >
+                <Lock className="icon" />
+                Privacy Policy
               </a>
             </li>
           </ul>

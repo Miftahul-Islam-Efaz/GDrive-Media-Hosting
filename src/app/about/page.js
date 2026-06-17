@@ -229,7 +229,14 @@ export default function AboutPage() {
         </main>
         
         <footer style={{ marginTop: 48, borderTop: "1px solid #dadce0", paddingTop: 24, textAlign: "center", fontSize: "0.8rem", color: "#80868b" }}>
-          GDrive Media Host — The Premium Web Solution for G Drive Image & Media Hosting.
+          <div style={{ marginBottom: 8 }}>
+            GDrive Media Host — The Premium Web Solution for G Drive Image & Media Hosting.
+          </div>
+          <div>
+            <Link href="/privacy" style={{ color: "#4899ff", textDecoration: "none", fontWeight: 500 }}>
+              Privacy Policy
+            </Link>
+          </div>
         </footer>
 
       </div>
