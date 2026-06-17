@@ -29,6 +29,9 @@ export const metadata = {
     title: "G Drive Media Hosting - Free Media Hosting",
     description: "Host your files for free using GDrive Media Host. Instantly upload and convert G Drive files to permanent public URLs, hotlinks, and iframe embeds.",
     images: ["/opengraph-image.png"],
+  },
+  verification: {
+    google: "UL16WbX2SDFD80N_XFHoMiYAI3G-0QBiZYBnoIK37po",
   }
 };
 
