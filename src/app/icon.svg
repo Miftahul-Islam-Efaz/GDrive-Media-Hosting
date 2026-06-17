@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <linearGradient id="folderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4899ff" />
+      <stop offset="100%" stop-color="#0b57d0" />
+    </linearGradient>
+    <linearGradient id="linkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#d3e3fd" />
+    </linearGradient>
+  </defs>
+  <!-- Folder Back -->
+  <path d="M4 6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h24a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2h-12L12 5H4z" fill="url(#folderGrad)" />
+  
+  <!-- Folder Front Accent flap -->
+  <path d="M2 12h28v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V12z" fill="#4899ff" opacity="0.85" />
+  
+  <!-- Glowing Link Icon inside Folder -->
+  <g transform="translate(11, 10) scale(0.45)">
+    <path d="M12.854 8.854a.5.5 0 0 0-.708-.708L7.5 12.793l-1.646-1.647a.5.5 0 0 0-.708.708l2 2a.5.5 0 0 0 .708 0l5-5z" fill="none" stroke="url(#linkGrad)" stroke-width="2" />
+    <path d="M9 17a6 6 0 1 1-8.5-8.5l4-4a1 1 0 1 1 1.4 1.4L1.9 9.9A4 4 0 1 0 7.5 15.5l4-4a1 1 0 1 1 1.4 1.4l-4 4z" fill="url(#linkGrad)" />
+    <path d="M15.5 8.5a4 4 0 0 0-5.6-5.6l-4 4a1 1 0 1 1-1.4-1.4l4-4a6 6 0 1 1 8.5 8.5l-4 4a1 1 0 1 1-1.4-1.4l4-4z" fill="url(#linkGrad)" />
+  </g>
+</svg>
