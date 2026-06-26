@@ -12,8 +12,8 @@ import confetti from "canvas-confetti";
 
 export default function Home() {
   // --- STATE FOR CREDENTIALS & AUTH ---
-  // Load Client ID from environment variable (set NEXT_PUBLIC_GOOGLE_CLIENT_ID in Vercel)
-  const [clientId, setClientId] = useState(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "");
+  // Load Client ID from environment variable, with fallback to default
+  const [clientId, setClientId] = useState(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "701910325684-bld20qoqo3t40frkisckvb6gtpl9k4st.apps.googleusercontent.com");
   const [isCustomClient, setIsCustomClient] = useState(false);
   const [accessToken, setAccessToken] = useState("");
   const [tokenExpiry, setTokenExpiry] = useState(0);
